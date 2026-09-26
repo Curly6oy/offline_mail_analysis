@@ -54,6 +54,20 @@ class AnalyzerTests(unittest.TestCase):
         self.assertEqual(cards[0]["count"], 1)
         self.assertNotIn("4111 1111 1111 1111", repr(result))
 
+    def test_html_and_authentication_headers_are_analyzed(self):
+        sample = (
+            b"From: sender@example.com\nReply-To: other@example.com\n"
+            b"Authentication-Results: mx; spf=fail; dkim=fail; dmarc=fail\n"
+            b"Content-Type: text/html; charset=utf-8\n\n"
+            b"<html><body><b>Ivan Petrov</b> <a href=\"https://example.org/token\">link</a></body></html>"
+        )
+        result = analyze_eml(sample)
+        self.assertEqual(result["urls"][0]["host"], "example.org")
+        self.assertTrue(any("Reply-To" in x for x in result["header_findings"]))
+        self.assertTrue(any("SPF" in x for x in result["header_findings"]))
+        self.assertTrue(any("DKIM" in x for x in result["header_findings"]))
+        self.assertTrue(any("DMARC" in x for x in result["header_findings"]))
+
     def test_size_limit(self):
         with self.assertRaises(ValueError):
             analyze_eml(b"x" * (10 * 1024 * 1024 + 1))

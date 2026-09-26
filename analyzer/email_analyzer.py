@@ -108,7 +108,7 @@ def analyze_eml(raw_bytes, filename="message.eml"):
     html_text = re.sub(r"<[^>]+>", " ", html)
     text = re.sub(r"\s+", " ", unescape("\n".join([
         str(message.get("Subject", "")), str(message.get("From", "")),
-        str(message.get("To", "")), str(message.get("Cc", "")), plain, html_text,
+        str(message.get("To", "")), str(message.get("Cc", "")), plain, html, html_text,
     ]))).strip()
 
     pii = _pii(text)

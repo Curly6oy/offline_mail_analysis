@@ -113,6 +113,46 @@ class AppTests(unittest.TestCase):
         self.assertNotIn(b"private-token", response.data)
         self.assertIn(b"example.com", response.data)
 
+    def test_security_headers_are_present(self):
+        response = self.client.get("/login")
+        self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(response.headers["X-Frame-Options"], "DENY")
+        self.assertEqual(response.headers["Referrer-Policy"], "no-referrer")
+        self.assertIn("script-src 'none'", response.headers["Content-Security-Policy"])
+
+    def test_missing_upload_is_rejected(self):
+        self._login()
+        with self.client.session_transaction() as session:
+            token = session["csrf_token"]
+        response = self.client.post("/check", data={"csrf_token": token})
+        self.assertEqual(response.status_code, 400)
+
+    def test_empty_upload_is_rejected(self):
+        self._login()
+        with self.client.session_transaction() as session:
+            token = session["csrf_token"]
+        response = self.client.post(
+            "/check",
+            data={"csrf_token": token, "email_file": (io.BytesIO(b""), "empty.eml")},
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Файл пустой".encode(), response.data)
+
+    def test_oversized_upload_returns_413(self):
+        self._login()
+        with self.client.session_transaction() as session:
+            token = session["csrf_token"]
+        response = self.client.post(
+            "/check",
+            data={
+                "csrf_token": token,
+                "email_file": (io.BytesIO(b"x" * (10 * 1024 * 1024 + 1)), "large.eml"),
+            },
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 413)
+
     def test_logout_requires_csrf(self):
         self._login()
         response = self.client.post("/logout")
