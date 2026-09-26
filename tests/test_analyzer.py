@@ -10,43 +10,46 @@ Content-Type: text/plain; charset=utf-8
 Ivan Petrov
 Phone: +7 999 123-45-67
 Passport: 1234 567890
-Visit https://example.com/test
+IBAN: DE89370400440532013000
+Born: 01.02.1990
+Visit https://example.com/private-token
 """
 
 class AnalyzerTests(unittest.TestCase):
-    def test_pii_categories_are_detected(self):
+    def test_detects_categories(self):
         result = analyze_eml(SAMPLE)
         kinds = {x["type"] for x in result["pii"]}
-        self.assertIn("Email", kinds)
-        self.assertIn("Телефон", kinds)
-        self.assertIn("Паспорт РФ", kinds)
+        for expected in ("Email", "Телефон", "Паспорт РФ", "IBAN", "Дата рождения"):
+            self.assertIn(expected, kinds)
         self.assertTrue(result["privacy"]["offline"])
+        self.assertFalse(result["privacy"]["external_requests"])
 
-    def test_raw_pii_is_not_returned(self):
+    def test_raw_pii_and_url_path_are_not_returned(self):
         result = analyze_eml(SAMPLE)
         serialized = repr(result)
         self.assertNotIn("999 123-45-67", serialized)
         self.assertNotIn("1234 567890", serialized)
-
-    def test_url_is_parsed_without_network_access(self):
-        result = analyze_eml(SAMPLE)
+        self.assertNotIn("private-token", serialized)
         self.assertEqual(result["urls"][0]["host"], "example.com")
-        self.assertEqual(result["urls"][0]["path"], "/test")
 
-    def test_attachment_metadata(self):
+    def test_attachment_filename_is_not_returned(self):
         sample = (
             b"From: a@example.com\nTo: b@example.com\n"
             b"Subject: attachment\nMIME-Version: 1.0\n"
             b'Content-Type: multipart/mixed; boundary="x"\n\n'
             b"--x\nContent-Type: text/plain\n\nhello\n"
             b"--x\nContent-Type: application/pdf\n"
-            b'Content-Disposition: attachment; filename="doc.pdf"\n\n'
+            b'Content-Disposition: attachment; filename="private-name.pdf"\n\n'
             b"binary-data\n--x--\n"
         )
         result = analyze_eml(sample)
         self.assertEqual(len(result["attachments"]), 1)
-        self.assertEqual(result["attachments"][0]["filename"], "doc.pdf")
+        self.assertNotIn("private-name.pdf", repr(result))
         self.assertEqual(len(result["attachments"][0]["sha256"]), 64)
+
+    def test_size_limit(self):
+        with self.assertRaises(ValueError):
+            analyze_eml(b"x" * (10 * 1024 * 1024 + 1))
 
 if __name__ == "__main__":
     unittest.main()

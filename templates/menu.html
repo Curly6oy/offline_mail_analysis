@@ -1,11 +1,1 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Offline Mail Analysis</title></head>
-<body>
-<h1>Offline Mail Analysis</h1>
-<p>Локальный анализ электронной почты без передачи содержимого внешним сервисам.</p>
-<form action="/check"><button>Проверка .eml</button></form>
-<p><a href="/vulnerabilities">Что проверяется</a></p>
-<form method="post" action="/logout"><button>Выйти</button></form>
-</body>
-</html>
+<!doctype html><html lang="ru"><meta charset="utf-8"><title>Offline Mail Analysis</title><body><h1>Offline Mail Analysis</h1><p>Локальный анализ электронной почты без передачи содержимого внешним сервисам.</p><p><a href="/check">Проверка .eml</a></p><p><a href="/vulnerabilities">Что проверяется</a></p><form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button>Выйти</button></form></body></html>
