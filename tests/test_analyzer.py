@@ -47,6 +47,13 @@ class AnalyzerTests(unittest.TestCase):
         self.assertNotIn("private-name.pdf", repr(result))
         self.assertEqual(len(result["attachments"][0]["sha256"]), 64)
 
+    def test_detects_luhn_valid_card(self):
+        sample = SAMPLE.replace(b"Visit", b"Card: 4111 1111 1111 1111\nVisit")
+        result = analyze_eml(sample)
+        cards = [x for x in result["pii"] if x["type"] == "Банковская карта"]
+        self.assertEqual(cards[0]["count"], 1)
+        self.assertNotIn("4111 1111 1111 1111", repr(result))
+
     def test_size_limit(self):
         with self.assertRaises(ValueError):
             analyze_eml(b"x" * (10 * 1024 * 1024 + 1))
