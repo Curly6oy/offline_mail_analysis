@@ -1,29 +1,34 @@
-# 📧 Offline Mail Analysis
+# Offline Mail Analysis
 
+Локальный анализатор email для снижения риска передачи персональных данных внешним сервисам.
 
-> Experimental local-first tool for analyzing email content without relying on a remote processing service.
+## Возможности
 
-## 📌 Project status
+- загрузка локального .eml;
+- RFC/MIME-разбор стандартной библиотекой Python;
+- обнаружение категорий потенциальных ПДн без вывода самих значений;
+- извлечение URL без DNS/HTTP-запросов;
+- метаданные вложений и SHA-256;
+- базовая проверка From, Reply-To, Received и Authentication-Results;
+- локальный web-интерфейс.
 
-This is an experimental / legacy project. It is not currently under active development.
+## Приватность
 
-## 🔎 About
+Анализатор не содержит вызовов внешних API и не выполняет DNS/HTTP-запросы для анализа письма. Содержимое файла не сохраняется сервером: оно обрабатывается в памяти.
 
-The repository contains a Python-based email analysis utility and a small set of templates.
+Это не абсолютная гарантия безопасности компьютера. Для строгого режима используйте сетевую изоляцию/firewall и контролируемое окружение.
 
-## 📁 Structure
+## Запуск
 
-```text
-offline_mail_analysis/
-├── letter_analysis.py
-└── templates/
-```
+Создайте виртуальное окружение, выполните `pip install -r requirements.txt`, затем `python app.py`.
+Откройте `http://127.0.0.1:5000/`.
 
+Для реального использования задайте переменные окружения `FLASK_SECRET_KEY` и `OFFLINE_MAIL_PASSWORD`.
 
-## ▶️ Usage
+## Тесты
 
-Review `letter_analysis.py` to see the current analysis flow and adapt the input/template format to your environment.
+`python -m unittest discover -s tests -v`
 
-## ⚠️ Notes
+## Ограничение детектора
 
-The project is preserved primarily as a reference for previous work. Contributions and updates may require additional cleanup before production use.
+Регулярные правила являются эвристикой: отсутствие найденных ПДн не означает юридически подтверждённое отсутствие персональных данных.
