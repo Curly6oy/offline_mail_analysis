@@ -27,7 +27,6 @@ def _parts(message):
         if filename or disposition == "attachment":
             payload = part.get_payload(decode=True) or b""
             attachments.append({
-                "filename": filename or "unnamed",
                 "content_type": ctype,
                 "size": len(payload),
                 "sha256": sha256(payload).hexdigest(),
@@ -81,12 +80,8 @@ def analyze_eml(raw_bytes, filename="message.eml"):
     plain, html, attachments = _parts(message)
     html_text = re.sub(r"<[^>]+>", " ", html)
     text = re.sub(r"\s+", " ", unescape("\n".join([
-        str(message.get("Subject", "")),
-        str(message.get("From", "")),
-        str(message.get("To", "")),
-        str(message.get("Cc", "")),
-        plain,
-        html_text,
+        str(message.get("Subject", "")), str(message.get("From", "")),
+        str(message.get("To", "")), str(message.get("Cc", "")), plain, html_text,
     ]))).strip()
 
     pii = _pii(text)
@@ -96,17 +91,13 @@ def analyze_eml(raw_bytes, filename="message.eml"):
     level = "HIGH" if score >= 60 else "MEDIUM" if score >= 25 else "LOW"
 
     return {
-        "filename": filename,
-        "privacy": {
-            "offline": True,
-            "external_requests": False,
-            "raw_pii_in_report": False,
-        },
+        "filename": "uploaded-email.eml",
+        "privacy": {"offline": True, "external_requests": False, "raw_pii_in_report": False},
         "message": {
-            "subject": str(message.get("Subject", ""))[:300],
-            "from": str(message.get("From", ""))[:300],
-            "to": str(message.get("To", ""))[:300],
-            "date": str(message.get("Date", ""))[:100],
+            "subject_present": bool(message.get("Subject")),
+            "from_present": bool(message.get("From")),
+            "to_present": bool(message.get("To")),
+            "date_present": bool(message.get("Date")),
         },
         "pii": pii,
         "urls": urls,
