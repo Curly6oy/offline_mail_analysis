@@ -34,3 +34,26 @@ Python 3.11+. Установите зависимости: `pip install -r requi
 ## Ограничения
 
 Детектор ПДн является эвристикой и не является юридическим заключением. Приложение не может гарантировать безопасность всей ОС; для высоких требований используйте изолированную машину/VM и контроль исходящего трафика.
+
+
+## Release 1.0.0
+
+Версия релиза: 1.0.0.
+
+Перед публикацией:
+1. CI на commit релиза должен быть successful.
+2. Локально должны проходить unit/integration тесты.
+3. На production задаются собственные FLASK_SECRET_KEY и OFFLINE_MAIL_PASSWORD_HASH.
+4. Для HTTPS устанавливается FLASK_COOKIE_SECURE=1.
+5. Для строгого offline-режима рекомендуется firewall/network isolation.
+
+### Health endpoint
+
+`GET /healthz` возвращает `{"status":"ok"}` и не требует авторизации.
+
+### Тесты
+
+`python -m unittest discover -s tests -v`
+`python -m compileall -q .`
+
+Релизный запуск выполняется через Waitress: `python server.py`.
