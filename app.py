@@ -24,7 +24,7 @@ PASSWORD_HASH = os.environ.get("OFFLINE_MAIL_PASSWORD_HASH")
 if not PASSWORD_HASH:
     raise RuntimeError("OFFLINE_MAIL_PASSWORD_HASH must be set")
 
-logging.basicConfig(filename="app.log", level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
 def login_required(view):
@@ -56,6 +56,8 @@ def security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
     response.headers["Cache-Control"] = "no-store"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; style-src 'self' 'unsafe-inline'; "
@@ -92,6 +94,11 @@ def logout():
     require_csrf()
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/healthz")
+def healthz():
+    return {"status": "ok"}
 
 
 @app.route("/check", methods=["GET", "POST"])
