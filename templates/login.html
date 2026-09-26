@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация</title>
-</head>
-<body>
-    <h2>Авторизация</h2>
-    <form method="post" action="/login">
-        <label for="username">Имя пользователя:</label><br>
-        <input type="text" id="username" name="username"><br>
-        <label for="password">Пароль:</label><br>
-        <input type="password" id="password" name="password"><br><br>
-        <input type="submit" value="Войти">
-    </form>
-</body>
-</html>
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><title>Авторизация</title><body>
+<h2>Авторизация</h2>
+{% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+<form method="post"><label>Пользователь</label><br><input name="username" required><br><br>
+<label>Пароль</label><br><input type="password" name="password" required><br><br>
+<button>Войти</button></form>
+</body></html>
